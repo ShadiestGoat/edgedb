@@ -386,6 +386,8 @@ def sdl_to_ddl(
                     ctx.objects[fq_name] = qltracer.Annotation(fq_name)
                 elif isinstance(decl_ast, qlast.CreateGlobal):
                     ctx.objects[fq_name] = qltracer.Global(fq_name)
+                elif isinstance(decl_ast, qlast.CreateIndex):
+                    ctx.objects[fq_name] = qltracer.Index(fq_name)
                 else:
                     raise AssertionError(
                         f'unexpected SDL declaration: {decl_ast}')

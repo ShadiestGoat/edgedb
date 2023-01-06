@@ -79,6 +79,10 @@ class Global(NamedObject):
     pass
 
 
+class Index(NamedObject):
+    pass
+
+
 class Type(NamedObject):
     def is_scalar(self) -> bool:
         return False

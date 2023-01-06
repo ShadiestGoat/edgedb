@@ -560,45 +560,54 @@ sdl_commands_block(
 
 class IndexDeclaration(
     Nonterm,
-    commondl.ProcessFunctionParamsMixin,
     commondl.ProcessIndexMixin,
 ):
     def reduce_CreateIndex(self, *kids):
         r"""%reduce ABSTRACT INDEX NodeName \
-                    CreateIndexSDLCommandsBlock"""
+                    OptExtendingSimple CreateIndexSDLCommandsBlock"""
         self.val = qlast.CreateIndex(
             name=kids[2].val,
-            commands=kids[3].val,
+            bases=kids[3].val,
+            commands=kids[4].val,
         )
 
     def reduce_CreateIndex_CreateFunctionArgs(self, *kids):
         r"""%reduce ABSTRACT INDEX NodeName IndexExtArgList \
-                    CreateIndexSDLCommandsBlock"""
-        self._validate_params(kids[3].val)
+                    OptExtendingSimple CreateIndexSDLCommandsBlock"""
+        bases = kids[4].val
+        params, kwargs = self._process_params_or_kwargs(bases, kids[3].val)
+
         self.val = qlast.CreateIndex(
             name=kids[2].val,
-            params=kids[3].val,
-            commands=kids[4].val,
+            params=params,
+            kwargs=kwargs,
+            bases=bases,
+            commands=kids[5].val,
         )
 
 
 class IndexDeclarationShort(
     Nonterm,
-    commondl.ProcessFunctionParamsMixin,
     commondl.ProcessIndexMixin,
 ):
     def reduce_CreateIndex(self, *kids):
-        r"""%reduce ABSTRACT INDEX NodeName"""
+        r"""%reduce ABSTRACT INDEX NodeName OptExtendingSimple"""
         self.val = qlast.CreateIndex(
             name=kids[2].val,
+            bases=kids[3].val,
         )
 
     def reduce_CreateIndex_CreateFunctionArgs(self, *kids):
-        r"""%reduce ABSTRACT INDEX NodeName IndexExtArgList"""
-        self._validate_params(kids[3].val)
+        r"""%reduce ABSTRACT INDEX NodeName IndexExtArgList \
+                    OptExtendingSimple"""
+        bases = kids[4].val
+        params, kwargs = self._process_params_or_kwargs(bases, kids[3].val)
+
         self.val = qlast.CreateIndex(
             name=kids[2].val,
-            params=kids[3].val,
+            params=params,
+            kwargs=kwargs,
+            bases=bases,
         )
 
 
@@ -630,6 +639,20 @@ class ConcreteIndexDeclarationBlock(Nonterm, commondl.ProcessIndexMixin):
             commands=kids[4].val,
         )
 
+    def reduce_CreateConcreteIndexWithArgs(self, *kids):
+        r"""%reduce INDEX NodeName IndexExtArgList \
+                    OnExpr OptExceptExpr \
+                    CreateConcreteIndexSDLCommandsBlock \
+        """
+        kwargs = self._process_arguments(kids[2].val)
+        self.val = qlast.CreateConcreteIndex(
+            name=kids[1].val,
+            kwargs=kwargs,
+            expr=kids[3].val,
+            except_expr=kids[4].val,
+            commands=kids[5].val,
+        )
+
 
 class ConcreteIndexDeclarationShort(Nonterm, commondl.ProcessIndexMixin):
     def reduce_INDEX_OnExpr_OptExceptExpr(self, *kids):
@@ -647,6 +670,18 @@ class ConcreteIndexDeclarationShort(Nonterm, commondl.ProcessIndexMixin):
             name=kids[1].val,
             expr=kids[2].val,
             except_expr=kids[3].val,
+        )
+
+    def reduce_CreateConcreteIndexWithArgs(self, *kids):
+        r"""%reduce INDEX NodeName IndexExtArgList \
+                    OnExpr OptExceptExpr \
+        """
+        kwargs = self._process_arguments(kids[2].val)
+        self.val = qlast.CreateConcreteIndex(
+            name=kids[1].val,
+            kwargs=kwargs,
+            expr=kids[3].val,
+            except_expr=kids[4].val,
         )
 
 
